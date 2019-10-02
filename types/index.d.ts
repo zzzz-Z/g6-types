@@ -126,7 +126,7 @@ declare module '@antv/g6' {
        * @param key
        * @param val
        */
-      set(key: string, val: any): Graph;
+      set(key: string, val: any): this;
 
       /**
        * 更新元素
@@ -249,7 +249,7 @@ declare module '@antv/g6' {
        * @param {object} data 源数据
        * @return {object} this
        */
-      changeData(data: any): Graph;
+      changeData(data: any): this;
 
       /**
        * 仅画布重新绘制
@@ -268,7 +268,7 @@ declare module '@antv/g6' {
        * @param  {number} height 画布高度
        * @return {object} this
        */
-      changeSize(width: number, height: number): Graph;
+      changeSize(width: number, height: number): this;
 
       /**
        * 平移画布
@@ -296,7 +296,7 @@ declare module '@antv/g6' {
        * @param {string|array} modes 添加到对应的模式
        * @return {object} this
        */
-      addBehaviors(behaviors: string | string[], modes: string | string[]): Graph;
+      addBehaviors(behaviors: string | string[], modes: string | string[]): this;
 
       /**
        * 移除行为
@@ -304,14 +304,14 @@ declare module '@antv/g6' {
        * @param {string|array} modes 从指定的模式中移除
        * @return {object} this
        */
-      removeBehaviors(behaviors: string | string[], modes: string | string[]): Graph;
+      removeBehaviors(behaviors: string | string[], modes: string | string[]): this;
 
       /**
        * 切换行为模式
        * @param {string} mode 指定模式
        * @return {object} this
        */
-      setMode(mode: string): Graph;
+      setMode(mode: string): this;
 
       /**
        * 获取当前的行为模式
@@ -486,7 +486,7 @@ declare module '@antv/g6' {
        * 清除画布元素
        * @return {object} this
        */
-      clear(): Graph;
+      clear(): this;
 
       /**
        * 销毁画布
@@ -566,7 +566,65 @@ declare module '@antv/g6' {
      * TreeGraph Class
      */
     export class TreeGraph extends Graph {
-      abc(): string;
+      getDefaultCfg(): Partial<TreeGraphOptions>;
+
+      /**
+       * 添加子树到对应 id 的节点
+       * @param {object} data 子树数据模型
+       * @param {string} parent 子树的父节点id
+       */
+      addChild(data: any, parent: string): void;
+
+      /**
+       * 更新源数据，差量更新子树
+       * @param {object} data 子树数据模型
+       * @param {string} parent 子树的父节点id
+       */
+      updateChild(data: any, parent: string): void;
+
+      /**
+       * 删除子树
+       * @param {string} id 子树根节点id
+       */
+      removeChild(id: string): void;
+
+      /**
+       * 根据id获取对应的源数据
+       * @param {string|object} id 元素id
+       * @param {object} parent 从哪个节点开始寻找，为空时从根节点开始查找
+       * @return {object} 对应源数据
+       */
+      findDataById(id: string | object, parent?: object): any;
+
+      /**
+       * 更改并应用树布局算法
+       * @param {object} layout 布局算法
+       */
+      changeLayout(layout: object): void;
+
+      /**
+       * 根据目前的 data 刷新布局，更新到画布上。用于变更数据之后刷新视图。
+       * @param {boolean} fitView 更新布局时是否需要适应窗口
+       */
+      refreshLayout(fitView: boolean): void;
+
+      /**
+       * 布局动画接口，用于数据更新时做节点位置更新的动画
+       * @param {object} data 更新的数据
+       * @param {function} onFrame 定义节点位置更新时如何移动
+       */
+      layoutAnimate(data: any, onFrame: Function): void;
+
+      /**
+       * 立即停止布局动画
+       */
+      stopLayoutAnimate(): void;
+
+      /**
+       * 是否在布局动画
+       * @return {boolean} 是否有布局动画
+       */
+      isLayoutAnimating(): boolean;
     }
 
     /**
