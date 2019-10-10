@@ -1,7 +1,7 @@
 import G6 from '@antv/g6';
 
-new G6.Graph();
-new G6.TreeGraph();
+const g1 = new G6.Graph({ container: 'id', width: 500, height: 500 });
+new G6.TreeGraph({ container: 'id', width: 500, height: 500 });
 G6.Util;
 G6.G;
 G6.Global;
