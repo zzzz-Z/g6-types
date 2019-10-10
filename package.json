@@ -3,20 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antvis/g6-types.git"
   },
   "keywords": [],
-  "types": "types/index",
+  "types": "types/index.d",
   "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/antvis/g6-types/issues"
   },
   "homepage": "https://github.com/antvis/g6-types#readme",
-  "devDependencies": {}
+  "devDependencies": {},
+  "dependencies": {
+    "@antv/dom-util": "^2.0.1",
+    "@antv/matrix-util": "^2.0.2",
+    "@antv/util": "^2.0.5"
+  }
 }
