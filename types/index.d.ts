@@ -1,9 +1,52 @@
 declare module '@antv/g6' {
+  import {
+    deepMix,
+    mix,
+    debounce,
+    each,
+    throttle,
+    isNil,
+    isArray,
+    remove,
+    extend,
+    augment,
+    clone,
+    uniqueId,
+    isNumber,
+    isPlainObject,
+    isString,
+    isObject,
+    wrapBehavior,
+    upperFirst,
+  } from '@antv/util';
+  import { mat3, vec2, vec3, transform } from '@antv/matrix-util';
+  import { createDom, modifyCSS, addEventListener } from '@antv/dom-util';
+
   namespace G6 {
     /**
      * 元素类型
      */
     type ElementType = 'node' | 'edge';
+
+    /**
+     * 坐标点
+     */
+    type Point = { x: number; y: number };
+
+    /**
+     * 矩形
+     */
+    type Rect = Point & { width: number; height: number };
+
+    /**
+     * 圆
+     */
+    type Circle = Point & { r: number };
+
+    /**
+     * 椭圆
+     */
+    type Ellipse = Point & { rx: number; ry: number };
 
     interface GraphOptions {
       /**
@@ -133,6 +176,13 @@ declare module '@antv/g6' {
        * @param {string|object} item 元素id或元素实例
        * @param {object} cfg 需要更新的数据
        */
+      update(item: any, cfg: any): void;
+
+      /**
+       * 更新元素
+       * @param {string|object} item 元素id或元素实例
+       * @param {object} cfg 需要更新的数据
+       */
       updateItem(item: any, cfg: any): void;
 
       /**
@@ -185,23 +235,23 @@ declare module '@antv/g6' {
       data(data: any): any;
 
       /**
-   * 设置各个节点样式，以及在各种状态下节点 keyShape 的样式。
-   * 若是自定义节点切在各种状态下
-   * graph.node(node => {
-   *  return {
-   *    {
-          shape: 'rect',
-          label: node.id,
-          style: { fill: '#666' },
-          stateStyles: {
-            selected: { fill: 'blue' },
-            custom: { fill: 'green' }
-          }
-        }
-   *  }
-   * });
-   * @param {function} nodeFn 指定每个节点样式
-   */
+       * 设置各个节点样式，以及在各种状态下节点 keyShape 的样式。
+       * 若是自定义节点切在各种状态下
+       * graph.node(node => {
+       *  return {
+       *    {
+              shape: 'rect',
+              label: node.id,
+              style: { fill: '#666' },
+              stateStyles: {
+                selected: { fill: 'blue' },
+                custom: { fill: 'green' }
+              }
+            }
+      *  }
+      * });
+      * @param {function} nodeFn 指定每个节点样式
+      */
       node(nodeFn: Function): void;
 
       /**
@@ -630,7 +680,171 @@ declare module '@antv/g6' {
     /**
      * Util
      */
-    interface Util {}
+    interface Util {
+      deepMix: typeof deepMix;
+      mix: typeof mix;
+      debounce: typeof debounce;
+      each: typeof each;
+      throttle: typeof throttle;
+      mat3: typeof mat3;
+      vec2: typeof vec2;
+      vec3: typeof vec3;
+      transform: typeof transform;
+      clone: typeof clone;
+      upperFirst: typeof upperFirst;
+      isNil: typeof isNil;
+      isArray: typeof isArray;
+      createDom: typeof createDom;
+      modifyCSS: typeof modifyCSS;
+      isObject: typeof isObject;
+      isPlainObject: typeof isPlainObject;
+      isNumber: typeof isNumber;
+      isString: typeof isString;
+      uniqueId: typeof uniqueId;
+      addEventListener: typeof addEventListener;
+      wrapBehavior: typeof wrapBehavior;
+      extend: typeof extend;
+      augment: typeof augment;
+      remove: typeof remove;
+
+      /**
+       * turn padding into [top, right, bottom, right]
+       * @param padding
+       */
+      formatPadding(padding: number | string | number[]): [number, number, number, number];
+
+      /**
+       * 拷贝事件
+       * @param e
+       */
+      cloneEvent(e: any): any;
+
+      getBBox(
+        element: any,
+        parent: any,
+      ): { minX: number; minY: number; maxX: number; maxY: number };
+
+      /**
+       * 获取某元素的自环边配置
+       * @param cfg
+       */
+      getLoopCfgs(cfg: any): any;
+
+      traverseTree(data: any, fn: Function): void;
+
+      radialLayout(data: any, layout: any): any;
+
+      /**
+       * 根据 label 所在线条的位置百分比，计算 label 坐标
+       * @param {object}  pathShape  G 的 path 实例，一般是 Edge 实例的 keyShape
+       * @param {number}  percent    范围 0 - 1 的线条百分比
+       * @param {number}  refX     x 轴正方向为基准的 label 偏移
+       * @param {number}  refY     y 轴正方向为基准的 label 偏移
+       * @param {boolean} rotate     是否根据线条斜率旋转文本
+       * @return {object} 文本的 x, y, 文本的旋转角度
+       */
+      getLabelPosition(
+        pathShape: any,
+        percent: number,
+        refX: number,
+        refY: number,
+        rotate: boolean,
+      ): {
+        x: number;
+        y: number;
+        angle: number;
+        rotate?: number;
+      };
+
+      getSpline(points: any): any;
+
+      /**
+       * 根据起始点、相对位置、偏移量计算控制点
+       * @param  {Object} startPoint 起始点，包含 x,y
+       * @param  {Object} endPoint  结束点, 包含 x,y
+       * @param  {Number} percent   相对位置,范围 0-1
+       * @param  {Number} offset    偏移量
+       * @return {Object} 控制点，包含 x,y
+       */
+      getControlPoint(startPoint: Point, endPoint: Point, percent: number, offset: number): Point;
+
+      /**
+       * 是否在区间内
+       * @param   {number}       value  值
+       * @param   {number}       min    最小值
+       * @param   {number}       max    最大值
+       * @return  {boolean}      bool   布尔
+       */
+      isBetween(value: number, min: number, max: number): boolean;
+
+      /**
+       * 两线段交点
+       * @param  {object}  p0 第一条线段起点
+       * @param  {object}  p1 第一条线段终点
+       * @param  {object}  p2 第二条线段起点
+       * @param  {object}  p3 第二条线段终点
+       * @return {object}  交点
+       */
+      getLineIntersect(p0: Point, p1: Point, p2: Point, p3: Point): Point;
+
+      /**
+       * point and rectangular intersection point
+       * @param  {object} rect  rect
+       * @param  {object} point point
+       * @return {object} rst;
+       */
+      getRectIntersectByPoint(rect: Rect, point: Point): Point;
+
+      /**
+       * get point and circle inIntersect
+       * @param {Object} circle 圆点，x,y,r
+       * @param {Object} point 点 x,y
+       * @return {object} applied point
+       */
+      getCircleIntersectByPoint(circle: Circle, point: Point): Point;
+
+      /**
+       * get point and ellipse inIntersect
+       * @param {Object} ellipse 椭圆 x,y,rx,ry
+       * @param {Object} point 点 x,y
+       * @return {object} applied point
+       */
+      getEllispeIntersectByPoint(ellipse: Ellipse, point: Point): Point;
+
+      /**
+       * coordinate matrix transformation
+       * @param  {number} point   coordinate
+       * @param  {number} matrix  matrix
+       * @param  {number} tag     could be 0 or 1
+       * @return {object} transformed point
+       */
+      applyMatrix(point: Point, matrix: number, tag?: number): Point;
+
+      /**
+       * coordinate matrix invert transformation
+       * @param  {number} point   coordinate
+       * @param  {number} matrix  matrix
+       * @param  {number} tag     could be 0 or 1
+       * @return {object} transformed point
+       */
+      invertMatrix(point: Point, matrix: number, tag?: number): Point;
+
+      /**
+       * 扁平的数据格式转成树形
+       * @param {array} data 扁平结构的数据
+       * @param {string} value 树状结构的唯一标识
+       * @param {string} parentId 父节点的键值
+       * @return {array} 转成的树形结构数据
+       */
+      flatToTree(data: any[], value?: string, parentId?: string): any[];
+
+      /**
+       * 获取各个group中的节点
+       * @param {object} data G6的数据模型
+       * @return {object} 各个group中的节点
+       */
+      getAllNodeInGroups(data: any): any;
+    }
     export const Util: Util;
 
     export const G: any;
@@ -689,11 +903,11 @@ declare module '@antv/g6' {
     interface Sharp {}
     export const Sharp: Sharp;
 
-    export function registerNode(): any;
+    export function registerNode(shapeType: string, cfg: any, extendShapeType?: string): any;
 
-    export function registerEdge(): any;
+    export function registerEdge(shapeType: string, cfg: any, extendShapeType?: string): any;
 
-    export function registerBehavior(): any;
+    export function registerBehavior(type: string, behavior: any): void;
 
     /**
      * 版本号
